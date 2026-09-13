@@ -65,6 +65,7 @@ Before Slack/Trinity publish, get a **separate** free-pool check that does **not
 4. On `FAIL`: do **not** publish. Fix the claim, re-query if needed, or hand to `/escalate-anomaly`. Re-run this step after a fix.
 5. On `PASS`: proceed to Step 6 / 7.
 6. If `chat_with_agent` is unavailable (local run without Trinity MCP): state plainly that independent verification was **skipped (no Trinity chat)** and do not claim it ran. Local drafts may be shown to Hamid; do not publish a Trinity report as verified.
+7. If the call fails with a **permission denied** (or any error that is not a clear `PASS` line): treat as **not verified** — do **not** publish. Escalate: analyst needs `POST /api/agents/aegis-analyst/permissions/aegis-infra` (or equivalent) before the loop can complete.
 
 ### Step 6: Check for obvious anomalies
 
@@ -92,11 +93,11 @@ If the tool is unavailable or refuses for lacking an agent-scoped key, skip this
 
 **Correct behavior:** Always trust the live `mrr_snapshot` / trajectory payload over remembered figures. If a field is missing, say "not returned by the API."
 
-### FM-2 — Self-grading instead of independent verify
+### FM-3 — Publishing after verify skip / permission denial
 
-**What went wrong:** Asking the same context that produced the claim to "double-check" inherits the reasoning trail.
+**What went wrong:** A run could draft real MRR, fail to reach `aegis-infra` (empty A2A permission), skip verify, and still call `mcp__trinity__report`.
 
-**Correct behavior:** Step 5 must be a separate agent call with claim + sources only.
+**Correct behavior:** Publish only after an explicit `PASS:` line from `/verify-revenue-claim`. Permission errors and skips are not PASS.
 
 ## Outputs
 
