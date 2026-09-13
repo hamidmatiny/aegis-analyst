@@ -8,8 +8,8 @@
       "plugins_installed": { "done": true, "label": "Install plugins (agent-dev, trinity)" }
     },
     "trinity": {
-      "onboarded": { "done": false, "label": "Deploy to Trinity (/trinity:onboard)" },
-      "first_remote_run": { "done": false, "label": "Run /check-revenue remotely via mcp__trinity__chat_with_agent" }
+      "onboarded": { "done": true, "label": "Deploy to Trinity (/trinity:onboard)" },
+      "first_remote_run": { "done": false, "label": "Run /check-revenue remotely via mcp__trinity__chat_with_agent", "blocked_by": "Deployed agent is on subscription auth (Hamid's Claude Max/Pro, OAuth token revoked) instead of the OmniRoute free-pool routing CLAUDE.md specifies. chat_with_agent fails with 401 until aegis-infra assigns the correct routing. See get_agent_auth evidence from 2026-09-13." }
     },
     "schedules": {
       "schedules_configured": { "done": false, "label": "Enable the daily /check-revenue schedule in template.yaml (only after trial report is approved)" },
