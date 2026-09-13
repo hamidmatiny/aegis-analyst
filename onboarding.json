@@ -1,11 +1,11 @@
 {
-  "phase": "local",
+  "phase": "trinity",
   "started": "2026-09-13",
   "steps": {
     "local": {
-      "env_configured": { "done": false, "label": "Set CORP_READONLY_TOKEN in .env (ask Hamid — never AEGIS_INTERNAL_TOKEN)" },
-      "trial_report_run": { "done": false, "label": "Run /trial-report and confirm real MRR/signup figures come back" },
-      "plugins_installed": { "done": false, "label": "Install plugins (agent-dev, trinity)" }
+      "env_configured": { "done": true, "label": "Set CORP_READONLY_TOKEN in .env (ask Hamid — never AEGIS_INTERNAL_TOKEN)" },
+      "trial_report_run": { "done": true, "label": "Run /trial-report and confirm real MRR/signup figures come back" },
+      "plugins_installed": { "done": true, "label": "Install plugins (agent-dev, trinity)" }
     },
     "trinity": {
       "onboarded": { "done": false, "label": "Deploy to Trinity (/trinity:onboard)" },

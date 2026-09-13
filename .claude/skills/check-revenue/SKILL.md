@@ -31,6 +31,10 @@ Make `GET` requests only, with `Authorization: Bearer $CORP_READONLY_TOKEN`, to:
 
 Never call any other method (no POST/PUT/DELETE) and never call any other route on that host.
 
+MRR lives on `/bev/summary`'s `mrr_snapshot` object: `mrr_display` (or `mrr_usd`/`mrr_cents` + `currency`) and `paying_subscribers`. If `mrr_snapshot.unavailable` is `true` or missing entirely, report "not returned by the API" — do not fall back to a remembered figure.
+
+Signup counts live on `/bev/trajectory`'s `signup_history_14d` array — use the most recent day's entry.
+
 To save tokens, extract only the specific fields you need (MRR, signup count, timestamp, any other headline numeric figures) rather than dumping the full raw payload into context.
 
 ### Step 3: Compare against the last known reading
