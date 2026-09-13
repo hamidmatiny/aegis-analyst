@@ -1,0 +1,68 @@
+name: aegis-analyst
+display_name: AEGIS Analyst
+description: |
+  P&L / MRR Analyst for Hamid's personal AEGIS agent company. Reads real, live
+  revenue data from corp-orchestrator's read-only API and reports it plainly —
+  no spin, no rounding, no forecasting — flagging only obvious arithmetic
+  anomalies to aegis-ceo.
+avatar_prompt: A calm, precise financial analyst at a minimalist glass desk, wire-rim glasses, sleeves rolled up, studying a single small monitor showing a plain black-on-white ledger of exact dollar figures — no charts, no dashboards, no flourish. Cool blue-grey lighting, sparse modern office, an expression of quiet, unembellished honesty. Muted, understated color palette; nothing decorative in frame.
+resources:
+  cpu: "1"
+  memory: "2g"
+
+# Claude Code plugins this agent needs — DECLARED, not typed (trinity#1704). Trinity materializes
+# this as a committed ~/.trinity/plugins.yaml and re-installs it headlessly on every container
+# boot, so the deployed agent has them without anyone running /plugin install. Mirror CLAUDE.md.
+plugins:
+  marketplaces:
+    - name: abilityai
+      source: abilityai/abilities
+  installed:
+    - agent-dev@abilityai
+    - trinity@abilityai
+
+# What this agent needs, BY NAME ONLY — names-only is the frozen contract; never values.
+# Every ${VAR} used in .mcp.json.template must appear here or the agent HARD-fails
+# compatibility check T-015. An agent with no secrets declares an explicit `credentials: {}`.
+credentials:
+  env_file: CORP_READONLY_TOKEN
+
+# Per-variable setup guidance (ent#128). DECORATES credentials: — it cannot declare a
+# name that isn't above (undeclared entries are dropped). Drives the platform's guided
+# checklist: GET /api/agents/{name}/credential-requirements (ent#127).
+credential_setup:
+  - name: CORP_READONLY_TOKEN
+    title: AEGIS corp-orchestrator read-only token
+    description: Read-only, GET-only bearer token for defenseaegis.org's /api/corp/v1/bev/* endpoints — the same credential aegis-ceo uses. Never the admin/write token.
+    required: true
+    secret: true
+    format: secret
+    setup_url: https://defenseaegis.org
+
+# Optional: recommended schedules (design source of truth). Trinity materializes
+# this block ON AGENT CREATION, deduplicated by `name` — at most 20 entries, and
+# NEVER re-applied on recreate, so a schedule added here after deployment must be
+# created with create_agent_schedule (or reconciled by /trinity:onboard | /trinity:sync).
+# `enabled` is the recommended default and only a literal YAML true arms a schedule;
+# firing ALSO requires the agent's autonomy gate, which is OFF on every new agent.
+# timezone: canonical IANA zones only — legacy aliases (Europe/Kiev, Asia/Calcutta,
+# US/Eastern) no longer resolve and 500 on schedule create. The container clock is UTC.
+schedules:
+  - name: Daily revenue check
+    cron: "0 13 * * *"
+    timezone: UTC
+    message: "Run /check-revenue and report today's real MRR and signup figures."
+    purpose: Daily real-revenue reporting cadence
+    enabled: false
+  - name: Dashboard refresh
+    cron: "0 */6 * * *"
+    timezone: UTC
+    message: "Run /update-dashboard."
+    purpose: Keep the live dashboard snapshot current
+    enabled: false
+  - name: Weekly doc reconciliation
+    cron: "0 9 * * 1"
+    timezone: UTC
+    message: "Run /reconcile-docs and report drift."
+    purpose: Surface doc/skill/architecture drift weekly
+    enabled: false

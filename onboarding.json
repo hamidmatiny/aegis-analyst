@@ -1,0 +1,19 @@
+{
+  "phase": "local",
+  "started": "2026-09-13",
+  "steps": {
+    "local": {
+      "env_configured": { "done": false, "label": "Set CORP_READONLY_TOKEN in .env (ask Hamid — never AEGIS_INTERNAL_TOKEN)" },
+      "trial_report_run": { "done": false, "label": "Run /trial-report and confirm real MRR/signup figures come back" },
+      "plugins_installed": { "done": false, "label": "Install plugins (agent-dev, trinity)" }
+    },
+    "trinity": {
+      "onboarded": { "done": false, "label": "Deploy to Trinity (/trinity:onboard)" },
+      "first_remote_run": { "done": false, "label": "Run /check-revenue remotely via mcp__trinity__chat_with_agent" }
+    },
+    "schedules": {
+      "schedules_configured": { "done": false, "label": "Enable the daily /check-revenue schedule in template.yaml (only after trial report is approved)" },
+      "first_scheduled_run": { "done": false, "label": "Verify first scheduled /check-revenue execution completed" }
+    }
+  }
+}

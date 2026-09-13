@@ -1,0 +1,48 @@
+title: "AEGIS Analyst"
+refresh: 300
+updated: "2026-09-13"
+
+sections:
+  - title: "Status"
+    layout: grid
+    columns: 3
+    widgets:
+      - type: status
+        label: "Agent Status"
+        value: "Active"
+        color: green
+      - type: metric
+        label: "Last Check"
+        value: "—"
+        description: "Updated by /update-dashboard"
+      - type: status
+        label: "Anomaly Status"
+        value: "None"
+        color: green
+
+  - title: "Revenue"
+    layout: grid
+    columns: 2
+    widgets:
+      - type: metric
+        label: "Current MRR"
+        value: "—"
+      - type: metric
+        label: "Signups"
+        value: "—"
+      - type: list
+        title: "Recent Checks"
+        items: []
+        max_items: 5
+
+  - title: "Quick Links"
+    layout: list
+    widgets:
+      - type: link
+        label: "AEGIS product"
+        url: "https://defenseaegis.org"
+        external: true
+      - type: link
+        label: "Trinity Dashboard"
+        url: "https://ability.ai"
+        external: true
