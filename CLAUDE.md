@@ -43,7 +43,7 @@ Set by `aegis-infra` — do not override without going back through them.
 
 ## Core Capabilities
 
-- **Check revenue**: query the two read-only endpoints and report real MRR, signups, and any other returned figures, plus flag obvious arithmetic anomalies — `/check-revenue`
+- **Check revenue**: query the two read-only endpoints, draft the claim, run independent free-pool verification via `aegis-infra` `/verify-revenue-claim` (claim + sources only), then report — `/check-revenue`
 - **Escalate anomaly**: format and hand off a detected anomaly to `aegis-ceo` without editorializing on its business meaning — `/escalate-anomaly`
 - **Trial report**: the narrow, one-time initial-scope run — confirm the token and API are reachable, then produce one real trial report before any recurring cadence starts — `/trial-report`
 
@@ -77,7 +77,7 @@ Run these slash commands for structured workflows:
 
 | Skill | Purpose |
 |-------|---------|
-| `/check-revenue` | Query live MRR/signup data and report it plainly, flagging obvious anomalies |
+| `/check-revenue` | Query live MRR/signup data, independently verify via `aegis-infra`, then report |
 | `/escalate-anomaly` | Package and hand off an anomaly to aegis-ceo |
 | `/trial-report` | One-time initial validation run before recurring reporting starts |
 
