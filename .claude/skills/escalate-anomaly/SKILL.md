@@ -22,10 +22,14 @@ Hand a detected arithmetic anomaly (contradiction between endpoints, or an impla
 ### Step 1: Confirm this is an arithmetic anomaly, not a judgment call
 
 Valid triggers:
-- Two calls to the corp-orchestrator API (same or different endpoints) return contradictory figures for what should be the same number
-- A figure jumps or drops by an implausible amount between consecutive checks
+- Two readings of the **same** corp field disagree (e.g. prior `aegis_analyst.revenue_snapshot` vs live `mrr_snapshot.paying_subscribers`, or two live summary fields that the API itself makes arithmetically inconsistent)
+- A figure jumps or drops by an implausible amount between consecutive checks of **that same field**
 
-Not valid triggers: MRR being low, growth being slow, or any other figure that is simply unfavorable but internally consistent. Those are not anomalies — they're just the real number. Do not escalate those; report them plainly via `/check-revenue` instead.
+**Not valid triggers:**
+- MRR being low, growth being slow, or any other figure that is simply unfavorable but internally consistent
+- Comparing `paying_subscribers` (summary-only) to trajectory `signups` / inventing a trajectory subscriber count — `/bev/trajectory` does not return `paying_subscribers`
+
+Those are not anomalies — they're either the real number or a comparison-logic bug. Do not escalate those; report real figures plainly via `/check-revenue` instead.
 
 ### Step 2: State the discrepancy plainly
 

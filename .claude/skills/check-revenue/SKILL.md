@@ -43,12 +43,14 @@ If `mcp__trinity__list_reports` is available, fetch the most recent `aegis_analy
 
 ### Step 4: Draft the claim (do not publish yet)
 
-Assemble the outbound claim text:
-- Current MRR (exact figure, with currency as returned)
-- Current signup count / paying subscribers
-- Any other numeric field the endpoints returned
-- Whether each figure is unchanged, up, or down from the last known reading, and by how much
+Assemble the outbound claim text — keep metrics on the endpoints that own them:
+- **MRR** from `summary.mrr_snapshot` only (`mrr_display` / currency)
+- **Paying subscribers** from `summary.mrr_snapshot.paying_subscribers` only
+- **Signups** from `trajectory.signup_history_14d` (most recent day) only — this is **not** a subscriber count
+- Whether each figure is unchanged, up, or down from the last known reading of **that same field**, and by how much
 - For any field the API did not return, say exactly "not returned by the API" — never fill the gap with a guess
+
+Do **not** invent a trajectory "paying" / "subscriber" figure. `/bev/trajectory` does not return `paying_subscribers`.
 
 Do not interpret what the numbers mean for the business. State the numbers and the delta, nothing more.
 
@@ -69,11 +71,16 @@ Before Slack/Trinity publish, get a **separate** free-pool check that does **not
 
 ### Step 6: Check for obvious anomalies
 
-Flag only explicit, obvious arithmetic problems:
-- The two endpoints contradict each other (e.g. summary and trajectory disagree on the same figure for the same period)
-- A sudden implausible jump or drop between this reading and the last one
+Flag only explicit, obvious arithmetic problems on **the same metric from a source that actually returns it**:
+- A sudden implausible jump or drop vs the last known reading of **that same field** (e.g. `mrr_snapshot.mrr_cents` or `paying_subscribers` vs prior revenue snapshot; or latest `signup_history_14d.signups` vs prior signup reading)
+- Internal contradiction **inside** `mrr_snapshot` if present (e.g. `mrr_cents` inconsistent with `paying_subscribers × monthly_unit_cents` when all fields are present and `unavailable` is false)
 
-If found, do not explain or interpret the anomaly — hand it to `/escalate-anomaly` with the two conflicting/surprising figures. A corrected figure still publishes via Step 7 **only** after an explicit Step 5 `PASS:` — never after skip, deny, or failure.
+**Not an anomaly (do not escalate):**
+- Comparing `summary.mrr_snapshot.paying_subscribers` to anything on `/bev/trajectory` — trajectory has **no** `paying_subscribers`; it only has `signup_history_14d` / chart `signups` (different concept)
+- Comparing today's signups to paying subscribers (signups ≠ subscribers)
+- Inferring or defaulting a missing field to `0` and treating that as a contradiction
+
+If a real anomaly is found, do not explain or interpret it — hand it to `/escalate-anomaly` with the two conflicting/surprising figures **and their exact JSON paths**. A corrected figure still publishes via Step 7 **only** after an explicit Step 5 `PASS:` — never after skip, deny, or failure.
 
 ### Step 7: Publish the report (Trinity only; after PASS only)
 
@@ -100,6 +107,12 @@ If the tool is unavailable or refuses for lacking an agent-scoped key, skip this
 **What went wrong:** A run could draft real MRR, fail to reach `aegis-infra` (empty A2A permission), skip verify, and still call `mcp__trinity__report`.
 
 **Correct behavior:** Publish only after an explicit `PASS:` line from `/verify-revenue-claim`. Permission errors and skips are not PASS.
+
+### FM-4 — Treating trajectory signups as paying_subscribers
+
+**What went wrong:** Anomaly / E2E paths compared `mrr_snapshot.paying_subscribers` to a fabricated "trajectory paying count" (sometimes defaulted to 0). Live `/bev/trajectory` has **no** `paying_subscribers` — only `signup_history_14d[].signups`. That is a comparison-logic bug, not a data-integrity issue.
+
+**Correct behavior:** Never invent trajectory subscriber fields. Never escalate signup≠subscriber. Only compare a field to another reading of the **same** field from a source that returns it.
 
 ## Outputs
 
