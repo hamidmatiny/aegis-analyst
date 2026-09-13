@@ -64,7 +64,7 @@ Before Slack/Trinity publish, get a **separate** free-pool check that does **not
 3. Expect a one-line `PASS: …` or `FAIL: …` reply.
 4. On `FAIL`: do **not** publish. Fix the claim, re-query if needed, or hand to `/escalate-anomaly`. Re-run this step after a fix.
 5. On `PASS`: proceed to Step 6 / 7.
-6. If `chat_with_agent` is unavailable (local run without Trinity MCP): state plainly that independent verification was **skipped (no Trinity chat)** and do not claim it ran. Local drafts may be shown to Hamid; do not publish a Trinity report as verified.
+6. If `chat_with_agent` is unavailable (local run without Trinity MCP): state plainly that independent verification was **skipped (no Trinity chat)**. Local drafts may be shown to Hamid as **unverified**. **Never** publish a Trinity revenue report for a skipped verify — skip is not publish-worthy.
 7. If the call fails with a **permission denied** (or any error that is not a clear `PASS` line): treat as **not verified** — do **not** publish. Escalate: analyst needs `POST /api/agents/aegis-analyst/permissions/aegis-infra` (or equivalent) before the loop can complete.
 
 ### Step 6: Check for obvious anomalies
@@ -73,11 +73,13 @@ Flag only explicit, obvious arithmetic problems:
 - The two endpoints contradict each other (e.g. summary and trajectory disagree on the same figure for the same period)
 - A sudden implausible jump or drop between this reading and the last one
 
-If found, do not explain or interpret the anomaly — hand it to `/escalate-anomaly` with the two conflicting/surprising figures. Still require Step 5 PASS (or explicit skip) before any publish of a corrected figure.
+If found, do not explain or interpret the anomaly — hand it to `/escalate-anomaly` with the two conflicting/surprising figures. A corrected figure still publishes via Step 7 **only** after an explicit Step 5 `PASS:` — never after skip, deny, or failure.
 
-### Step 7: Publish the report (Trinity only; after PASS)
+### Step 7: Publish the report (Trinity only; after PASS only)
 
-If Step 5 returned `PASS` and `mcp__trinity__report` is available, call it:
+**Publish gate:** Step 5 must have returned an explicit `PASS:` line. Skip, deny, timeout, or any non-PASS result → **do not publish**.
+
+If (and only if) Step 5 returned `PASS:` and `mcp__trinity__report` is available, call it:
 - `report_type`: `aegis_analyst.revenue_snapshot`
 - `display_hint`: `kpi`
 - `title`: e.g. "MRR $29.00 CAD — unchanged"

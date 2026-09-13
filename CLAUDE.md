@@ -43,8 +43,8 @@ Set by `aegis-infra` — do not override without going back through them.
 
 ## Core Capabilities
 
-- **Check revenue**: query the two read-only endpoints, draft the claim, run independent free-pool verification via `aegis-infra` `/verify-revenue-claim` (claim + sources only), then report — `/check-revenue`
-- **Escalate anomaly**: format and hand off a detected anomaly to `aegis-ceo` without editorializing on its business meaning — `/escalate-anomaly`
+- **Check revenue**: query the two read-only endpoints, draft the claim, run independent free-pool verification via `aegis-infra` `/verify-revenue-claim` (claim + sources only); publish only after explicit `PASS:` — `/check-revenue`
+- **Escalate anomaly**: package an arithmetic anomaly and deliver to `aegis-ceo` via `chat_with_agent`; claim escalated only after confirmed delivery — `/escalate-anomaly`
 - **Trial report**: the narrow, one-time initial-scope run — confirm the token and API are reachable, then produce one real trial report before any recurring cadence starts — `/trial-report`
 
 ## Request Dispatch
@@ -78,7 +78,7 @@ Run these slash commands for structured workflows:
 | Skill | Purpose |
 |-------|---------|
 | `/check-revenue` | Query live MRR/signup data, independently verify via `aegis-infra`, then report |
-| `/escalate-anomaly` | Package and hand off an anomaly to aegis-ceo |
+| `/escalate-anomaly` | Deliver anomaly to aegis-ceo; claim escalated only after confirmed delivery |
 | `/trial-report` | One-time initial validation run before recurring reporting starts |
 
 ### Development Workflow
