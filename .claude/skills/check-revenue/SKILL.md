@@ -1,7 +1,7 @@
 ---
 name: check-revenue
 description: Query corp-orchestrator's read-only API for real MRR and signup figures and report them plainly, flagging any obvious arithmetic anomaly
-allowed-tools: Bash, Read, WebFetch, mcp__trinity__chat_with_agent, mcp__trinity__list_reports, mcp__trinity__report
+allowed-tools: Bash, Read, WebFetch, mcp__trinity__chat_with_agent, mcp__trinity__list_reports, mcp__trinity__report, mcp__trinity__list_channel_groups, mcp__trinity__send_group_message
 user-invocable: true
 metadata:
   version: "1.1"
@@ -28,6 +28,8 @@ Check that `CORP_READONLY_TOKEN` is set (from `.env` locally, or the injected en
 Make `GET` requests only, with `Authorization: Bearer $CORP_READONLY_TOKEN`, to:
 - `https://defenseaegis.org/api/corp/v1/bev/trajectory`
 - `https://defenseaegis.org/api/corp/v1/bev/summary`
+
+Always send a browser-like `User-Agent` header (e.g. `Mozilla/5.0 … Chrome/120…`). Cloudflare error **1010** / HTTP **403** on these routes is a WAF Browser Integrity Check on bare clients — **not** a dead or rotated `CORP_READONLY_TOKEN`. Bad/missing token returns **401** from the app. On 403/1010: retry once with User-Agent; if it persists, report Track A edge/WAF, do not invent MRR.
 
 Never call any other method (no POST/PUT/DELETE) and never call any other route on that host.
 
@@ -93,6 +95,10 @@ If (and only if) Step 5 returned `PASS:` and `mcp__trinity__report` is available
 - `payload`: `{ "tiles": [ {"label": "MRR", "value": "29.00", "unit": "CAD"}, {"label": "Signups", "value": "1"} ], "source": "https://defenseaegis.org/api/corp/v1/bev/summary", "checked_at": "<ISO timestamp>", "verified_by": "aegis-infra:/verify-revenue-claim" }`
 
 If the tool is unavailable or refuses for lacking an agent-scoped key, skip this step silently — do not retry.
+
+### Step 8: Slack completed-task close-out (mandatory)
+
+Every run ends with a real post to `#aegis-analyst` via `list_channel_groups` (`channel_type: "slack"`) then `send_group_message`. Include: what was asked, who asked, what you did, real outcome (incl. verify FAIL / publish skipped), who you reported to. Trinity `report` is not a substitute. See CLAUDE.md § Slack completed-task close-out.
 
 ## Known failure modes
 
