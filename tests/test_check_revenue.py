@@ -31,6 +31,7 @@ class CheckRevenueTest(unittest.TestCase):
         self.assertEqual(mrr, "not returned by the API")
         self.assertEqual(paying, "not returned by the API")
         self.assertEqual(cr.latest_signups({}), "not returned by the API")
+        self.assertEqual(cr.latest_signups({"signup_history_14d": []}), "empty (no days returned)")
 
     def test_report_states_the_delta(self):
         text = cr.render(

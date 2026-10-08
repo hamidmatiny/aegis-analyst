@@ -68,7 +68,11 @@ def mrr_fields(summary: dict) -> tuple[str, str]:
 
 def latest_signups(trajectory: dict) -> str:
     hist = trajectory.get("signup_history_14d") if isinstance(trajectory, dict) else None
-    if not isinstance(hist, list) or not hist or not isinstance(hist[-1], dict):
+    if not isinstance(hist, list):
+        return "not returned by the API"
+    if not hist:
+        return "empty (no days returned)"
+    if not isinstance(hist[-1], dict):
         return "not returned by the API"
     last = hist[-1]
     if "signups" not in last:
