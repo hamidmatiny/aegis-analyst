@@ -54,6 +54,30 @@ class CheckRevenueTest(unittest.TestCase):
         self.assertEqual(mrr, "29.00 CAD")
         self.assertEqual(json.loads(json.dumps(cr.snapshot(SUMMARY, TRAJECTORY)))["mrr"], "$0.00 CAD")
 
+    def test_trial_mode_reports_token_and_api(self):
+        text = cr.render(SUMMARY, TRAJECTORY, None, trial=True)
+        self.assertTrue(text.startswith("Task: /trial-report"))
+        self.assertIn("Token: confirmed working", text)
+        self.assertIn("API: reachable", text)
+        self.assertIn("MRR: $0.00 CAD (no prior baseline)", text)
+        self.assertIn("left disabled", text)
+        self.assertNotIn("Token:", cr.render(SUMMARY, TRAJECTORY, None))
+
+    def test_trial_flag_labels_failures(self):
+        import io
+        import os
+        from contextlib import redirect_stdout
+        from unittest import mock
+
+        out = io.StringIO()
+        with mock.patch.dict(os.environ, {"CORP_READONLY_TOKEN": ""}), \
+                mock.patch.object(cr, "load_dotenv"), \
+                mock.patch.object(cr.Path, "is_dir", return_value=False), \
+                redirect_stdout(out):
+            self.assertEqual(cr.main(["--trial"]), 1)
+        self.assertIn("Task: /trial-report", out.getvalue())
+        self.assertIn("CORP_READONLY_TOKEN is missing", out.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -89,18 +89,28 @@ def delta(current: str, previous: str | None) -> str:
     return f"was {previous}"
 
 
-def render(summary: dict, trajectory: dict, baseline: dict | None) -> str:
+def task_name(trial: bool) -> str:
+    return "/trial-report" if trial else "/check-revenue"
+
+
+def render(summary: dict, trajectory: dict, baseline: dict | None, trial: bool = False) -> str:
     mrr, paying = mrr_fields(summary)
     signups = latest_signups(trajectory)
     base = baseline or {}
     lines = [
-        "Task: /check-revenue",
+        f"Task: {task_name(trial)}",
         "What I did: GET /api/corp/v1/bev/summary and /api/corp/v1/bev/trajectory",
+    ]
+    if trial:
+        lines += ["Token: confirmed working", "API: reachable"]
+    lines += [
         f"MRR: {mrr} ({delta(mrr, base.get('mrr'))})",
         f"Paying subscribers: {paying} ({delta(paying, base.get('paying_subscribers'))})",
         f"Signups: {signups} ({delta(signups, base.get('signups'))})",
         "Outcome: success",
     ]
+    if trial:
+        lines.append("Schedule: /check-revenue left disabled until Hamid approves this trial")
     return "\n".join(lines)
 
 
@@ -109,31 +119,33 @@ def snapshot(summary: dict, trajectory: dict) -> dict:
     return {"mrr": mrr, "paying_subscribers": paying, "signups": latest_signups(trajectory)}
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    trial = "--trial" in (sys.argv[1:] if argv is None else argv)
+    task = task_name(trial)
     if Path("/home/developer").is_dir():
         os.chdir("/home/developer")
     for candidate in (Path("/home/developer/.env"), Path(".env")):
         load_dotenv(candidate)
     token = os.environ.get("CORP_READONLY_TOKEN", "")
     if not token:
-        print("Task: /check-revenue")
+        print(f"Task: {task}")
         print("Outcome: failure")
         print("CORP_READONLY_TOKEN is missing. No other credential was used.")
         return 1
     summary_status, summary = _get(SUMMARY_URL, token)
     traj_status, trajectory = _get(TRAJECTORY_URL, token)
     if summary_status == 403 or traj_status == 403:
-        print("Task: /check-revenue")
+        print(f"Task: {task}")
         print("Outcome: failure")
         print("HTTP 403 from defenseaegis.org. This is the Cloudflare check, not a rotated token.")
         return 1
     if summary_status == 401 or traj_status == 401:
-        print("Task: /check-revenue")
+        print(f"Task: {task}")
         print("Outcome: failure")
         print("HTTP 401. CORP_READONLY_TOKEN was rejected.")
         return 1
     if summary_status != 200 or traj_status != 200:
-        print("Task: /check-revenue")
+        print(f"Task: {task}")
         print("Outcome: failure")
         print(f"HTTP summary={summary_status} trajectory={traj_status}")
         return 1
@@ -141,7 +153,7 @@ def main() -> int:
     baseline = None
     if baseline_path.is_file():
         baseline = json.loads(baseline_path.read_text())
-    print(render(summary, trajectory, baseline))
+    print(render(summary, trajectory, baseline, trial=trial))
     baseline_path.parent.mkdir(parents=True, exist_ok=True)
     baseline_path.write_text(json.dumps(snapshot(summary, trajectory), indent=2) + "\n")
     return 0
